@@ -1,8 +1,11 @@
 package io.jenkins.blueocean.rest.impl.pipeline;
 
+import io.jenkins.blueocean.rest.model.BlueRun;
 import io.jenkins.blueocean.service.embedded.rest.QueueUtil;
+import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -12,8 +15,10 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ WorkflowRun.class, WorkflowJob.class, QueueUtil.class })
@@ -59,5 +64,83 @@ public class PipelineNodeImplTest {
 
         PowerMockito.verifyStatic(QueueUtil.class, VerificationModeFactory.times(4));
         QueueUtil.getRun(job, 1); // need to call again to handle verify
+    }
+
+    @Test
+    public void isFeatureRestartableStagesEnabled_allStagesDisabled(){
+        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "true");
+        assertFalse(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
+        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+    }
+
+    @Test
+    public void isFeatureRestartableStagesEnabled_allStagesEnabled(){
+        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "false");
+        assertTrue(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
+        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+    }
+
+    @Test
+    public void isFeatureRestartableStagesEnabled_allStagesEnabled_valueTypo(){
+        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "typo");
+        assertTrue(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
+        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+    }
+
+    @Test
+    public void isRestartable_stagesAreNotRestartable() throws Exception {
+        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "true");
+
+        PipelineNodeImpl underTest = PowerMockito.mock(PipelineNodeImpl.class);
+        PowerMockito.field(PipelineNodeImpl.class, "run").set(underTest, run);
+
+        RestartDeclarativePipelineAction restartDeclarativePipelineAction = PowerMockito.mock(RestartDeclarativePipelineAction.class);
+        PowerMockito.when(run.getAction(RestartDeclarativePipelineAction.class)).thenReturn(restartDeclarativePipelineAction);
+        PowerMockito.when(underTest.isRestartable()).thenCallRealMethod();
+
+        Boolean isStageRestartable = underTest.isRestartable();
+        Assert.assertNotNull(isStageRestartable);
+        Assert.assertFalse(isStageRestartable);
+        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+    }
+
+    @Test
+    public void isRestartable_stagesAreNotRestartable_Typo() throws Exception {
+        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "t");
+
+        PipelineNodeImpl underTest = PowerMockito.mock(PipelineNodeImpl.class);
+        PowerMockito.field(PipelineNodeImpl.class, "run").set(underTest, run);
+
+        RestartDeclarativePipelineAction restartDeclarativePipelineAction = PowerMockito.mock(RestartDeclarativePipelineAction.class);
+        PowerMockito.when(run.getAction(RestartDeclarativePipelineAction.class)).thenReturn(restartDeclarativePipelineAction);
+        PowerMockito.when(underTest.isRestartable()).thenCallRealMethod();
+
+        Boolean isStageRestartable = underTest.isRestartable();
+        Assert.assertNotNull(isStageRestartable);
+        Assert.assertFalse(isStageRestartable);
+        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+    }
+
+    @Test
+    public void isRestartable_stagesAreRestartable() throws Exception {
+        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "false");
+        String restartableStageUnderTest = "restartableStageUnderTest";
+
+        PipelineNodeImpl underTest = PowerMockito.mock(PipelineNodeImpl.class);
+        PowerMockito.field(PipelineNodeImpl.class, "run").set(underTest, run);
+
+        RestartDeclarativePipelineAction restartDeclarativePipelineAction = PowerMockito.mock(RestartDeclarativePipelineAction.class);
+        PowerMockito.when(run.getAction(RestartDeclarativePipelineAction.class)).thenReturn(restartDeclarativePipelineAction);
+
+        List<String> restartableStages = Arrays.asList(restartableStageUnderTest);
+        PowerMockito.when(restartDeclarativePipelineAction.getRestartableStages()).thenReturn(restartableStages);
+        PowerMockito.when(underTest.getDisplayName()).thenReturn(restartableStageUnderTest);
+        PowerMockito.when(underTest.getStateObj()).thenReturn(BlueRun.BlueRunState.FINISHED);
+        PowerMockito.when(underTest.isRestartable()).thenCallRealMethod();
+
+        Boolean isStageRestartable = underTest.isRestartable();
+        Assert.assertNotNull(isStageRestartable);
+        Assert.assertTrue(isStageRestartable);
+        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
     }
 }

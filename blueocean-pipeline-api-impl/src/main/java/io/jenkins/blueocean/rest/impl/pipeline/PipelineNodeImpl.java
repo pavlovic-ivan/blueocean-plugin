@@ -181,7 +181,7 @@ public class PipelineNodeImpl extends BluePipelineNode {
     public boolean isRestartable() {
         RestartDeclarativePipelineAction restartDeclarativePipelineAction =
             this.run.getAction( RestartDeclarativePipelineAction.class );
-        if (restartDeclarativePipelineAction != null) {
+        if (restartDeclarativePipelineAction != null && isFeatureRestartableStagesEnabled()) {
             List<String> restartableStages = restartDeclarativePipelineAction.getRestartableStages();
             if (restartableStages != null) {
                 return restartableStages.contains(this.getDisplayName())
@@ -189,6 +189,11 @@ public class PipelineNodeImpl extends BluePipelineNode {
             }
         }
         return false;
+    }
+
+    public static boolean isFeatureRestartableStagesEnabled(){
+        boolean disabledFeature = Boolean.getBoolean("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+        return !disabledFeature;
     }
 
     @Override
