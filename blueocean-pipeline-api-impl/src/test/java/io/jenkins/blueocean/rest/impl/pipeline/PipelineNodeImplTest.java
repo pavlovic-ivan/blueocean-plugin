@@ -66,26 +66,26 @@ public class PipelineNodeImplTest {
         QueueUtil.getRun(job, 1); // need to call again to handle verify
     }
 
-    @Test
-    public void isFeatureRestartableStagesEnabled_allStagesDisabled(){
-        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "true");
-        assertFalse(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
-        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
-    }
-
-    @Test
-    public void isFeatureRestartableStagesEnabled_allStagesEnabled(){
-        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "false");
-        assertTrue(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
-        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
-    }
-
-    @Test
-    public void isFeatureRestartableStagesEnabled_allStagesEnabled_valueTypo(){
-        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "typo");
-        assertTrue(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
-        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
-    }
+//    @Test
+//    public void isFeatureRestartableStagesEnabled_allStagesDisabled(){
+//        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "true");
+//        assertFalse(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
+//        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+//    }
+//
+//    @Test
+//    public void isFeatureRestartableStagesEnabled_allStagesEnabled(){
+//        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "false");
+//        assertTrue(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
+//        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+//    }
+//
+//    @Test
+//    public void isFeatureRestartableStagesEnabled_allStagesEnabled_valueTypo(){
+//        System.setProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES", "typo");
+//        assertTrue(PipelineNodeImpl.isFeatureRestartableStagesEnabled());
+//        System.clearProperty("blueocean.features.DISABLE_RESTARTABLE_STAGES");
+//    }
 
     @Test
     public void isRestartable_stagesAreNotRestartable() throws Exception {
